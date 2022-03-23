@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static io.github.zeroone3010.yahueapi.MathUtil.isInRange;
 
@@ -298,8 +297,9 @@ public final class State {
     }
 
     @Override
-    public State alert(AlertType alert) {
-      return new State(alert);
+    public BuildStep alert(AlertType alert) {
+      this.alert = alert;
+      return this;
     }
 
     @Override
@@ -307,7 +307,7 @@ public final class State {
       return new State(effect);
     }
 
-    private State build() {
+    public State build() {
       return new State(this);
     }
 

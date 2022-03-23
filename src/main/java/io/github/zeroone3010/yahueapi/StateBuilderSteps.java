@@ -97,9 +97,9 @@ public final class StateBuilderSteps {
      * {@link State#SHORT_ALERT}, {@link State#LONG_ALERT}, and {@link State#NO_ALERT}.
      *
      * @param alertType Type of the alert to be activated, or {@code AlertType.NONE} to stop the long alert.
-     * @return A new {@code State}.
+     * @return A new {@code BuildStep}.
      */
-    State alert(AlertType alertType);
+    BuildStep alert(AlertType alertType);
   }
 
   public interface EffectStep {
