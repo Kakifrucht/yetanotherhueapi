@@ -603,7 +603,7 @@ public final class Hue {
         final URL baseUrl;
         try {
           TrustEverythingManager.trustAllSslConnectionsByDisablingCertificateVerification();
-          baseUrl = new URL(urlString + "/api");
+          baseUrl = new URL(urlString + "/api/");
         } catch (final MalformedURLException e) {
           throw new HueApiException(e);
         }
