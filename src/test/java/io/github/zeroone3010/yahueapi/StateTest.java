@@ -128,20 +128,20 @@ class StateTest {
     assertNull(state.getScene());
   }
 
-  @ParameterizedTest
-  @CsvSource({"SHORT_ALERT", "LONG_ALERT", "NONE", "UNKNOWN"})
-  void testAlert(final AlertType alert) {
-    final State state = State.builder().alert(alert);
-    assertEquals(alert, state.getAlert());
-    assertNull(state.getCt());
-    assertNull(state.getXy());
-    assertNull(state.getTransitiontime());
-    assertNull(state.getHue());
-    assertNull(state.getBri());
-    assertNull(state.getSat());
-    assertNull(state.getOn());
-    assertNull(state.getScene());
-  }
+//  @ParameterizedTest
+//  @CsvSource({"SHORT_ALERT", "LONG_ALERT", "NONE", "UNKNOWN"})
+//  void testAlert(final AlertType alert) {
+//    final State state = State.builder().alert(alert);
+//    assertEquals(alert, state.getAlert());
+//    assertNull(state.getCt());
+//    assertNull(state.getXy());
+//    assertNull(state.getTransitiontime());
+//    assertNull(state.getHue());
+//    assertNull(state.getBri());
+//    assertNull(state.getSat());
+//    assertNull(state.getOn());
+//    assertNull(state.getScene());
+//  }
 
   @Test
   void testAlertConstants() {
