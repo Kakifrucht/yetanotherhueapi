@@ -65,7 +65,7 @@ public final class State {
   private final Integer transitiontime;
   private final List<Float> xy;
   private final String scene;
-  private final AlertType alert;
+  private AlertType alert;
   private final EffectType effect;
 
   private State(final Builder builder) {
@@ -155,6 +155,10 @@ public final class State {
    */
   public AlertType getAlert() {
     return alert;
+  }
+
+  public void removeAlert() {
+    alert = null;
   }
 
   /**
