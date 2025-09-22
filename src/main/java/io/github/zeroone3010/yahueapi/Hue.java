@@ -11,10 +11,15 @@ import io.github.zeroone3010.yahueapi.domain.Scene;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -569,24 +574,61 @@ public final class Hue {
     }
 
     /**
-     * Returns a {@code CompletableFuture} that calls the /api/config path of given Hue Bridge to verify
-     * that you are connecting to a Hue bridge.
+     * Verifies that the given endpoint is a Hue Bridge by calling its /api/config endpoint.
+     * If the call is successful (HTTP 200 OK), it returns the SHA-256 hash of the bridge's
+     * CA certificate. This hash can be used for certificate pinning.
      *
-     * @return A {@code CompletableFuture} with an boolean that is true when the call to the bridge was successful.
-     * @since 2.7.0
+     * @return A {@code CompletableFuture} with the SHA-256 CA certificate hash as a hex string
+     * if the endpoint is a verified Hue Bridge. The future completes with {@code null} if the
+     * endpoint is not a Hue Bridge, is not HTTPS, or if any error occurs.
      */
-    public CompletableFuture<Boolean> isHueBridgeEndpoint() {
-      final Supplier<Boolean> isBridgeSupplier = () -> {
+    public CompletableFuture<String> getVerifiedBridgeCertificateHash() {
+      final Supplier<String> certHashSupplier = () -> {
+        HttpsURLConnection connection = null;
         try {
           TrustEverythingManager.trustAllSslConnectionsByDisablingCertificateVerification();
-          HttpURLConnection urlConnection = (HttpURLConnection) new URL(urlString + "/api/config").openConnection();
-          int responseCode = urlConnection.getResponseCode();
-          return HttpURLConnection.HTTP_OK == responseCode;
-        } catch (IOException e) {
-          return false;
+          URL url = new URL(urlString + "/api/config");
+          connection = (HttpsURLConnection) url.openConnection();
+          connection.setRequestMethod("GET");
+
+          int responseCode = connection.getResponseCode();
+          if (responseCode == HttpURLConnection.HTTP_OK) {
+            Certificate[] certs = connection.getServerCertificates();
+            if (certs == null || certs.length == 0) {
+              return null;
+            }
+
+            // get CA certificate
+            Certificate serverCert = certs[certs.length - 1];
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(serverCert.getEncoded());
+            return bytesToHex(digest);
+          } else {
+            return null;
+          }
+        } catch (IOException | NoSuchAlgorithmException | CertificateEncodingException e) {
+          return null;
+        } finally {
+          if (connection != null) {
+            connection.disconnect();
+          }
         }
       };
-      return CompletableFuture.supplyAsync(isBridgeSupplier);
+      return CompletableFuture.supplyAsync(certHashSupplier);
+    }
+    /**
+     * Helper method to convert a byte array to a hexadecimal string.
+     */
+    private static String bytesToHex(byte[] hash) {
+      StringBuilder hexString = new StringBuilder(2 * hash.length);
+      for (byte b : hash) {
+        String hex = Integer.toHexString(0xff & b);
+        if (hex.length() == 1) {
+          hexString.append('0');
+        }
+        hexString.append(hex);
+      }
+      return hexString.toString();
     }
 
     /**
